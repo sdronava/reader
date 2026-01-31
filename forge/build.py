@@ -1,47 +1,31 @@
-import json
 import os
-from .epub import extract_toc, extract_blocks_from_section, resolve_epub_path
+import json
+from .images import copy_images_from_epub
+from .epub import extract_html
 from .segments import segment_blocks
-from .ids import gen_id
+from pathlib import Path
 
-def build_book(epub_path, out_dir, segment_tokens):
+def write_segments(segments: list, out_dir: str):
+    for seg in segments:
+        seg_dir = os.path.join(out_dir, seg["segment_id"])
+        os.makedirs(seg_dir, exist_ok=True)
+        filepath = os.path.join(seg_dir, f"{seg['segment_id']}.json")
+        with open(filepath, "w", encoding="utf-8") as f:
+            json.dump(seg, f, ensure_ascii=False, indent=2)
+
+def build_book(epub_path: str, out_dir="build", segment_tokens=1000, resources_uri="images/"):
     os.makedirs(out_dir, exist_ok=True)
+    # 0. Copy images from EPUB to output directory
+    out_dir = Path(out_dir)
+    copy_images_from_epub(epub_path, out_dir)
 
-    toc = extract_toc(epub_path)
+    # 1. Extract blocks from EPUB
+    blocks = extract_html(epub_path, out_dir=out_dir, resources_uri=resources_uri)
 
-    manifest = {
-        "book_id": gen_id("book"),
-        "chapters": []
-    }
+    # 2. Segment blocks
+    segments = segment_blocks(blocks, max_tokens=segment_tokens)
 
-    for ch in toc["chapters"]:
-        ch_dir = os.path.join(out_dir, ch["id"])
-        os.makedirs(ch_dir, exist_ok=True)
+    # 3. Write segments to JSON
+    write_segments(segments, out_dir)
 
-        chapter_entry = {
-            "chapter_id": ch["id"],
-            "title": ch["title"],
-            "sections": []
-        }
-
-        for sec in ch["sections"]:
-            internal_path = resolve_epub_path(epub_path, sec["href"])
-            blocks = extract_blocks_from_section(epub_path, internal_path)
-            segments = segment_blocks(blocks, segment_tokens)
-
-            sec_file = f"{sec['id']}.json"
-            with open(os.path.join(ch_dir, sec_file), "w") as f:
-                json.dump({
-                    "section_id": sec["id"],
-                    "segments": segments
-                }, f, indent=2)
-
-            chapter_entry["sections"].append({
-                "section_id": sec["id"],
-                "file": sec_file
-            })
-
-        manifest["chapters"].append(chapter_entry)
-
-    with open(os.path.join(out_dir, "manifest.json"), "w") as f:
-        json.dump(manifest, f, indent=2)
+    print(f"Build complete. Segments written to {out_dir}")
