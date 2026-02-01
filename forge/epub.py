@@ -2,7 +2,6 @@ import os
 import zipfile
 from bs4 import BeautifulSoup
 from .blocks import create_block
-from .images import copy_image
 from pathlib import Path, PurePosixPath
 
 def extract_html(epub_path: str, out_dir: str, resources_uri: str) -> list:
@@ -33,12 +32,14 @@ def extract_html(epub_path: str, out_dir: str, resources_uri: str) -> list:
                         img_name = Path(PurePosixPath(src).name)  # normalize filename
                         img_uri = resources_uri / img_name
                         print(img_uri)
-                        blocks.append({
-                            "block_id": create_block("", "image")["block_id"],
-                            "type": "image",
-                            "content": str(img_uri),  # JSON URI
-                            "metadata": {"original_path": src},
-                            "tokens": 0
-                        })
+
+                        blocks.append(
+                            create_block(
+                                content=str(img_uri),
+                                block_type="image",
+                                metadata={"original_path": src},
+                                tokens=0,
+                            )
+                        )
 
     return blocks

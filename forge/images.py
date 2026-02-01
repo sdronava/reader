@@ -1,26 +1,23 @@
-import os
 import shutil
-import zipfile
 from pathlib import Path
-from .ids import gen_id
 from zipfile import ZipFile
 
-def copy_image(src_path: str, out_dir: str, resources_uri: str) -> dict:
-    """
-    Copy an image to the output folder (resources folder) and return a block reference
-    """
-    os.makedirs(os.path.join(out_dir, resources_uri), exist_ok=True)
-    filename = os.path.basename(src_path)
-    dest_path = os.path.join(out_dir, resources_uri, filename)
-    shutil.copyfile(src_path, dest_path)
+# def copy_image(src_path: str, out_dir: str, resources_uri: str) -> dict:
+#     """
+#     Copy an image to the output folder (resources folder) and return a block reference
+#     """
+#     os.makedirs(os.path.join(out_dir, resources_uri), exist_ok=True)
+#     filename = os.path.basename(src_path)
+#     dest_path = os.path.join(out_dir, resources_uri, filename)
+#     shutil.copyfile(src_path, dest_path)
 
-    return {
-        "block_id": gen_id("img"),
-        "type": "image",
-        "content": os.path.join(resources_uri, filename),
-        "metadata": {"original_path": src_path},
-        "tokens": 0
-    }
+#     return {
+#         "block_id": gen_id("img"),
+#         "type": "image",
+#         "content": os.path.join(resources_uri, filename),
+#         "metadata": {"original_path": src_path},
+#         "tokens": 0
+#     }
 
 def copy_images_from_epub(epub_path: str, out_dir: str) -> None:
     """
