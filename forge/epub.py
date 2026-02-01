@@ -3,6 +3,8 @@ import zipfile
 from bs4 import BeautifulSoup
 from .blocks import create_block
 from pathlib import Path, PurePosixPath
+from .spine import get_spine_html_files
+
 
 def extract_html(epub_path: str, out_dir: str, resources_uri: str) -> list:
     """
@@ -14,7 +16,9 @@ def extract_html(epub_path: str, out_dir: str, resources_uri: str) -> list:
     resources_uri = Path(resources_uri)  # ensure Path object for joins
 
     with zipfile.ZipFile(epub_path, "r") as zf:
-        for name in zf.namelist():
+        ordered_files = get_spine_html_files(epub_path)
+        for name in ordered_files:
+        #for name in zf.namelist():
             if name.lower().endswith((".xhtml", ".html")):
                 content = zf.read(name).decode("utf-8")
                 soup = BeautifulSoup(content, "lxml")
