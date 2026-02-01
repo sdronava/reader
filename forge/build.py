@@ -29,7 +29,7 @@ def build_book(epub_path: str, out_dir="build", segment_tokens=1000, resources_u
     """
     # Ensure paths
     out_dir = Path(out_dir)
-    resources_uri = Path(resources_uri)
+    #resources_uri = Path(resources_uri)
     os.makedirs(out_dir, exist_ok=True)
 
     # 0. Extract images

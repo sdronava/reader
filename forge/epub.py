@@ -62,10 +62,10 @@ def extract_html(epub_path: str, out_dir: str, resources_uri: str) -> list:
     defined by resources_uri.
     """
     blocks = []
-    resources_uri = Path(resources_uri)  # ensure Path object for joins
 
     with zipfile.ZipFile(epub_path, "r") as zf:
         ordered_files = get_spine_html_files(epub_path)
+
         for name in ordered_files:
         #for name in zf.namelist():
             if name.lower().endswith((".xhtml", ".html")):
@@ -83,7 +83,9 @@ def extract_html(epub_path: str, out_dir: str, resources_uri: str) -> list:
                     src = img.get("src")
                     if src:
                         img_name = Path(PurePosixPath(src).name)  # normalize filename
-                        img_uri = resources_uri / img_name
+                        print(type(resources_uri ))
+                        resources_uri = resources_uri.rstrip("/")
+                        img_uri = f"{resources_uri}/{img_name}"
                         print(img_uri)
 
                         blocks.append(
